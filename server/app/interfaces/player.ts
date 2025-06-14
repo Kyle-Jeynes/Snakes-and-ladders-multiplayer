@@ -7,4 +7,6 @@ export default interface IPlayer {
     isHost: boolean;
     roll: number | undefined;
     points: number,
+    rolling: boolean,
+    position: number[],
 };

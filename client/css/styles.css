@@ -107,3 +107,26 @@
     background: #e26b6b;
     border-radius: 5px;
 }
+
+.rotating-image {
+    animation: rotateRight 1s linear infinite;
+    transform-origin: center center;
+}
+
+@keyframes rotateRight {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.player-location {
+    background: rgb(236, 143, 21) !important;
+    border-radius: 50% !important;
+}
+
+.player-location-pointer {
+    font-size: 22pt;
+}

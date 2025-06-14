@@ -53,10 +53,17 @@ export default class WebSocketServerService {
                 console.log(`[+] Player ID: ${playerId}`);
 
                 const player = this.container.resolve<PlayerService>('PlayerService').getPlayer(playerId)!;
+
+                // Check if there is a host
+                if (Array.from(this.container.resolve<PlayerService>('PlayerService').getAllPlayers().entries()).filter(([_, {isHost}]) => isHost).length <= 0) {
+                    console.log(`[!] No host exists - ${player.id} is now hosting`);
+                    [player.isHost, player.rolling] = [true, true];
+                }
                 
                 // Update the player's name to the requested name and set them as ready
                 [player.name, player.isReady] = [name, true];
 
+                // Update player state to the client
                 socket.send(JSON.stringify({
                     event: 'playerInfo',
                     data: {
@@ -65,7 +72,9 @@ export default class WebSocketServerService {
                         isHost: player.isHost,
                         name: player.name || 'Player',
                         isReady: player.isReady,
-                        roll: player.roll
+                        roll: player.roll,
+                        rolling: player.rolling,
+                        position: player.position,
                     }
                 }));
 

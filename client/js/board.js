@@ -59,7 +59,7 @@ export async function drawBoard(board) {
         boardDOM.innerHTML = '';
 
         // render
-        const { mapStructure, players } = board;
+        const { mapStructure, players, snakes, ladders } = board;
 
         mapStructure.forEach((row, index) => {
             const rowDOM = document.createElement('div');
@@ -84,6 +84,25 @@ export async function drawBoard(board) {
                 }
 
                 const tileNumberDOM = document.createElement('span');
+
+                // Display player position
+                const playerLoc = players.filter(({position}) => {
+                    const [r, t] = position;
+                    return r === index && t === tIndex;
+                });
+
+                if (playerLoc.length > 0) {
+                    tileNumberDOM.classList.add('player-location');
+
+                    const pLocDOM = document.createElement('div');
+                    pLocDOM.classList.add('player-location-pointer');
+                    pLocDOM.innerText = '🎯';
+                    pLocDOM.setAttribute('data-players', playerLoc.length);
+                    pLocDOM.title = `There are ${playerLoc.length} player(s) here`;
+
+                    tileDOM.appendChild(pLocDOM);
+                }
+
                 const totalRows = 10;
                 const totalCols = 10;
 

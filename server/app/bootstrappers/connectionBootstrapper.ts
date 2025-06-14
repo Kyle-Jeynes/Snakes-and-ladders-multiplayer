@@ -1,7 +1,7 @@
 import IBootstrap from "../interfaces/bootstrap";
 import IContainer from "../interfaces/container";
 import IPlayer from "../interfaces/player";
-import { Game } from "../services/game";
+import { Game, GameStatus } from "../services/game";
 import PlayService from "../services/play";
 import PlayerService from "../services/players";
 import crypto from 'crypto';
@@ -48,6 +48,8 @@ export default class ConnectionBootstrapper implements IBootstrap {
                 isHost: container.resolve<PlayerService>('PlayerService').playerCount() === 0,
                 roll: undefined,
                 points: 0,
+                rolling: container.resolve<PlayerService>('PlayerService').playerCount() === 0,
+                position: [9, 0]
             };
 
             // Add the player to the PlayerService
@@ -83,19 +85,16 @@ export default class ConnectionBootstrapper implements IBootstrap {
                         container.delete(`PlayService-${player.id}`);
                     }
 
-                    let migration = false;
+                    let migrationRequired = JSON.parse(JSON.stringify(player.isHost));
 
-                    // Check if we need to migrate the host
-                    if (player.isHost) {
-                        if (container.resolve<PlayerService>('PlayerService').playerCount() > 1) {
-                            migration = true;
-                        }
-                    }
+                    console.log('[*] Migration required? ', migrationRequired);
 
-                    [player.isReady, player.isHost] = [false, false];
+                    // Reset player attributes
+                    [player.isReady, player.isHost, player.rolling, player.roll] = [false, false, false, undefined];
+                    player.position = [9, 0];
 
                     // Migrate the host
-                    if (migration) {
+                    if (migrationRequired) {
                         const players = container.resolve<PlayerService>('PlayerService').getAllPlayers();
 
                         const newHostId = Array.from(players.entries())
@@ -104,9 +103,12 @@ export default class ConnectionBootstrapper implements IBootstrap {
                             .shift() as string | null;
 
                             if (newHostId) {
-                                container.resolve<PlayerService>('PlayerService').getPlayer(newHostId)!.isHost = true;
+                                const newHost = container.resolve<PlayerService>('PlayerService').getPlayer(newHostId);
+                                newHost!.isHost = true;
+                                console.log(`[+] Host migration to ${newHost!.id} succeeded`);
                             } else {
-                                // TODO: Need to end the Game
+                                console.log('[-] No available players remain to proceed - server is resetting');
+                                container.resolve<Game>('GameService').setStatus(GameStatus.WAITING);
                             }
                     }
 

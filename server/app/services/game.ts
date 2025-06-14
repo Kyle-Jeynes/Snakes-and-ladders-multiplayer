@@ -69,7 +69,15 @@ export class Game {
                 data: {
                     players: Array.from(playerService.getAllPlayers().entries())
                         .filter(([_, player]) => player.isReady)
-                        .map(([id, player]) => ({ id, name: player.name, isHost: player.isHost, roll: player.roll || null, points: player.points })),
+                        .map(([id, player]) => ({ 
+                            id, 
+                            name: player.name, 
+                            isHost: player.isHost, 
+                            roll: player.roll || null, 
+                            points: player.points, 
+                            rolling: player.rolling,
+                            position: player.position,
+                        })),
                     status: this.status,
                     mapStructure: this.mapStructure,
                     rollTimer: this.rollTimer,
