@@ -108,7 +108,7 @@ export default class WebSocketServerService {
                 socket.on('message', async (data) => {
                     try {
                         const { event, data: payload } = await this.decodeMessage(data);
-                        await this.container.resolve<PlayService>(`PlayService-${playerId}`).handlePlayerEvent(event, payload);
+                        await this.container.resolve<PlayService>(`PlayService-${playerId}`).handlePlayerEvent(event, payload, this.container);
                     } catch (error) {
                         console.error(`[-] Error handling message for player ${playerId} for game ${gameService.getId()}`);
                         console.error(error);

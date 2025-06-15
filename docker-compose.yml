@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  static-html:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./client:/usr/share/nginx/html:ro
+    depends_on:
+      - frontend-app
+    networks:
+      - frontend
+
+  frontend-app:
+    build:
+      context: ./server
+    ports:
+      - "8080:8080"
+    command: sh -c "npm install && npm run serve"
+    volumes:
+      - ./server:/server
+    working_dir: /app
+    networks:
+      - frontend
+
+networks:
+  frontend:
+    driver: bridge

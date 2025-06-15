@@ -8,5 +8,5 @@ export default interface IPlayer {
     roll: number | undefined;
     points: number,
     rolling: boolean,
-    position: number[],
+    position: [number, number],
 };

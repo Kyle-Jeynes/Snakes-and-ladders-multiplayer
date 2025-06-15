@@ -93,6 +93,9 @@ export default class ConnectionBootstrapper implements IBootstrap {
                     [player.isReady, player.isHost, player.rolling, player.roll] = [false, false, false, undefined];
                     player.position = [9, 0];
 
+                    // Remove turn
+                    container.resolve<Game>('GameService').removePlayerFromGame(player.id);
+
                     // Migrate the host
                     if (migrationRequired) {
                         const players = container.resolve<PlayerService>('PlayerService').getAllPlayers();

@@ -131,7 +131,7 @@ export async function drawBoard(board) {
 
         leadersDOM.innerHTML = '';
 
-        players.forEach(({id, name, points, roll}, index) => {
+        players.forEach(({id, name, points, rolling, tile}, index) => {
             const liDOM = document.createElement('li');
             const cList = index === 0 ? 'gold' : (index === 1 ? 'silver' : (index === 2 ? 'bronze' : null));
             
@@ -145,10 +145,15 @@ export async function drawBoard(board) {
                 document.createElement('span'),
             ];
 
-            playerName.innerText = name;
+            playerName.innerText = `${name} (T: ${tile +1})`;
             playerName.classList.add('player-name');
 
-            playerRank.innerText = (index +1).toString();
+            playerRank.innerText = `${(index +1).toString()}`;
+
+            if (rolling) {
+                playerRank.innerText += ` (R)`;
+            }
+
             playerRank.classList.add('player-rank');
 
             playerScore.innerText = `${points} pts`;

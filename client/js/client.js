@@ -4,7 +4,7 @@ import { dispatch } from './event.js';
 export async function client(playerId = null, token = null, name = null) {
     return new Promise((resolve, reject) => {
         // For now, we only have a single game server, so we hardcode the URL
-        let gameServer = 'ws://localhost:8080';
+        let gameServer = 'ws://192.168.0.37:8080';
 
         // Append the name
         if (name) {
@@ -33,6 +33,20 @@ export async function client(playerId = null, token = null, name = null) {
             const { event: handle, data: payload } = data;
             
             switch (handle) {
+                case 'turnPlayed':
+                    const { roll, reroll } = payload;
+                    alert(`You rolled a ${roll}`);
+                    document.querySelector('.actions img').classList.remove('rotating-image');
+
+                    if (!reroll) {
+                        document.querySelector('.buttons button').disabled = true;
+                    }
+                    break;
+                case 'gameStartFailure':
+                    const {content} = payload;
+                    alert(content);
+                    document.querySelector('.host button').classList.remove('hidden');
+                    break;
                 case 'playerInfo':
                     localStorage.setItem('player', JSON.stringify(payload));
                     dispatch('player:updated', payload);

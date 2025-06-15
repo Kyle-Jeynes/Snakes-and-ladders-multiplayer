@@ -1,6 +1,7 @@
 import PlayerService from "./players";
 import MapGenerator from "./map";
 import crypto from 'crypto';
+import { extractPaths } from "./board";
 
 export enum GameStatus {
     WAITING = "waiting",
@@ -14,6 +15,7 @@ export class Game {
     private maxPlayers: number = 4;
     private round: number = 1;
     private rollTimer: number = 30 * 1000;
+    private turnOrder: string[] = [];
 
     // Default Map Structure
     private mapStructure: string[][] = [
@@ -29,9 +31,23 @@ export class Game {
         ['o', 'o', 'o', 'o', 'o', 'l', 'o', 'o', 'o', 'o'],
     ];
 
+    private snakes: any[];
+    private ladders: any[];
+
     public constructor(port: number) {
         this.id = crypto.randomUUID();
         this.port = port;
+
+        this.snakes = extractPaths(this.mapStructure, 's');
+        this.ladders = extractPaths(this.mapStructure, 'l');
+    }
+
+    public getSnakes(): any[] {
+        return this.snakes;
+    }
+
+    public getLadders(): any[] {
+        return this.ladders;
     }
 
     public getId(): string {
@@ -62,6 +78,11 @@ export class Game {
         this.status = status;
     }
 
+    private toFlatIndex([row, col]: [number, number]): number {
+        const y = 9 - row;
+        return y % 2 === 0 ? y * 10 + col : y * 10 + (9 - col); 
+    }
+
     public async updateGameState(s: any, playerService: PlayerService) {
         return new Promise<void>((resolve, reject) => {
             s.send(JSON.stringify({
@@ -77,6 +98,7 @@ export class Game {
                             points: player.points, 
                             rolling: player.rolling,
                             position: player.position,
+                            tile: this.toFlatIndex(player.position),
                         })),
                     status: this.status,
                     mapStructure: this.mapStructure,
@@ -90,10 +112,15 @@ export class Game {
 
     public async handlePlayerJoined(playerId: string, playerService: PlayerService): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            if (this.status !== GameStatus.WAITING) {
+            if (this.status !== GameStatus.WAITING && !this.turnOrder.some(s => s === playerId)) {
                 console.log(`[-] Game ${this.id} is already in progress. Player ${playerId} cannot join.`);
+                // TODO: Add spectator mode
                 reject(new Error(`Game is already in progress.`));
                 return;
+            }
+
+            if (!this.turnOrder.some(s => s === playerId)) {
+                this.turnOrder.push(playerId);
             }
 
             playerService.getPlayer(playerId)!.sockets.forEach(s => {
@@ -108,6 +135,14 @@ export class Game {
 
     public getRollTimer(): number {
         return this.rollTimer;
+    }
+
+    public nextPlayerTurn(currentPlayerTurnId: string): string {
+        return this.turnOrder[this.turnOrder.indexOf(currentPlayerTurnId) +1] ?? this.turnOrder[0];
+    }
+
+    public removePlayerFromGame(playerId: string) {
+        this.turnOrder.splice(this.turnOrder.indexOf(playerId), 1);
     }
 
     public async startGameIfReady(playerService: PlayerService): Promise<void> {
@@ -147,7 +182,6 @@ export class Game {
             }
 
             this.status = GameStatus.IN_PROGRESS;
-            console.log(`[!] Game ${this.id} has started.`);
             resolve();
         });
     }
