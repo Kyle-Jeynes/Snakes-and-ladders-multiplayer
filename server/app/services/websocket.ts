@@ -63,7 +63,7 @@ export default class WebSocketServerService {
                 // Work out if someone needs to be moved to rolling
                 const playersAvail = Array.from(this.container.resolve<PlayerService>('PlayerService').getAllPlayers().entries()).filter(([_, {isReady}]) => isReady);
                 
-                if (playersAvail.some(([_, {rolling}]) => rolling)) {
+                if (!playersAvail.some(([_, {rolling}]) => rolling)) {
                     player.rolling = true;
                 }
                 
