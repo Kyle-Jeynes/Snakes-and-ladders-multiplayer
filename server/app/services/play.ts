@@ -195,20 +195,18 @@ export default class PlayService {
                                     });
 
                                 // Update Game UI State
-                                new Promise<void>((resolve, _) => {
-                                    setTimeout(() => {
-                                        Array.from(container.resolve<PlayerService>('PlayerService').getAllPlayers().entries())
-                                            .filter(([_, {isReady}]) => isReady)
-                                            .map(([id, {sockets}]) => ({id, sockets}))
-                                            .forEach(({sockets}) => {
-                                                sockets.forEach(s => {
-                                                    container.resolve<Game>('GameService').updateGameState(s, container.resolve<PlayerService>('PlayerService'));
-                                                });
+                                Promise.allSettled([new Promise<void>((resolve, _) => {
+                                    Array.from(container.resolve<PlayerService>('PlayerService').getAllPlayers().entries())
+                                        .filter(([_, {isReady}]) => isReady)
+                                        .map(([id, {sockets}]) => ({id, sockets}))
+                                        .forEach(({sockets}) => {
+                                            sockets.forEach(s => {
+                                                container.resolve<Game>('GameService').updateGameState(s, container.resolve<PlayerService>('PlayerService'));
                                             });
-                                    }, 2000);
-
+                                        });
+                                        
                                     resolve();
-                                });
+                                })]);
                             }
                         }
                     });

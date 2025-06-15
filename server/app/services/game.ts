@@ -113,10 +113,10 @@ export class Game {
     public async handlePlayerJoined(playerId: string, playerService: PlayerService): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             if (this.status !== GameStatus.WAITING && !this.turnOrder.some(s => s === playerId)) {
-                console.log(`[-] Game ${this.id} is already in progress. Player ${playerId} cannot join.`);
+                console.log(`[-] Game ${this.id} is already in progress. Player ${playerId} joined in-progress.`);
                 // TODO: Add spectator mode
-                reject(new Error(`Game is already in progress.`));
-                return;
+                //reject(new Error(`Game is already in progress.`));
+                //return;
             }
 
             if (!this.turnOrder.some(s => s === playerId)) {
