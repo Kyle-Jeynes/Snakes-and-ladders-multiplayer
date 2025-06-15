@@ -59,6 +59,13 @@ export default class WebSocketServerService {
                     console.log(`[!] No host exists - ${player.id} is now hosting`);
                     [player.isHost, player.rolling] = [true, true];
                 }
+
+                // Work out if someone needs to be moved to rolling
+                const playersAvail = Array.from(this.container.resolve<PlayerService>('PlayerService').getAllPlayers().entries()).filter(([_, {isReady}]) => isReady);
+                
+                if (playersAvail.some(([_, {rolling}]) => rolling)) {
+                    player.rolling = true;
+                }
                 
                 // Update the player's name to the requested name and set them as ready
                 [player.name, player.isReady] = [name, true];
